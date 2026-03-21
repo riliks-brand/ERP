@@ -17,7 +17,24 @@ async function main() {
   });
 
   const tenantId = tenant.id;
-  console.log(`✅ Tenant Created: ${tenant.name}`);
+  console.log(`✅ Tenant Ready: ${tenant.name}`);
+
+  // 1.5 Clean current tenant data to prevent unique constraint conflicts on re-runs
+  console.log('🧹 Cleaning existing tenant data...');
+  await prisma.glossary.deleteMany();
+  await prisma.salesOrderItem.deleteMany();
+  await prisma.salesOrder.deleteMany();
+  await prisma.productionOrderItem.deleteMany();
+  await prisma.productionOrder.deleteMany();
+  await prisma.bomItem.deleteMany();
+  await prisma.bundleItem.deleteMany();
+  await prisma.productVariant.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.inventoryLedger.deleteMany();
+  await prisma.rawMaterial.deleteMany();
+  await prisma.vendorLedger.deleteMany();
+  await prisma.vendor.deleteMany();
+  console.log('🧼 Database cleaned.');
 
   // 2. Create Raw Materials (Fabrics, Thread, Packaging)
   const cottonRoll = await prisma.rawMaterial.create({
@@ -122,18 +139,17 @@ async function main() {
       orderNumber: 'ORD-1001',
       customerName: 'Ahmed Youssef',
       customerPhone: '01198765432',
-      customerCity: 'Cairo',
-      shippingAddress: 'Nasr City, Makram Ebeid',
+      customerAddress: 'Nasr City, Makram Ebeid, Cairo',
       status: 'SHIPPED',
       shippingProviderId: null, // Bosta or manual
-      subtotal: 1900.0,
-      shippingFee: 60.0,
-      totalAmount: 1960.0,
+      shippingCost: 60.0,
+      codAmount: 1960.0,
+      totalAmount: 1900.0, // Subtotal basically
       trackingNumber: 'TRK-999123',
       items: {
         create: [
-          { variantId: hoodie.variants[0].id, qty: 1, unitPrice: 950.0, totalLinePrice: 950.0 },
-          { variantId: hoodie.variants[1].id, qty: 1, unitPrice: 950.0, totalLinePrice: 950.0 },
+          { variantId: hoodie.variants[0].id, qty: 1, unitPrice: 950.0, unitCost: 400.0 },
+          { variantId: hoodie.variants[1].id, qty: 1, unitPrice: 950.0, unitCost: 400.0 },
         ],
       },
     },
@@ -145,14 +161,14 @@ async function main() {
       orderNumber: 'ORD-1002',
       customerName: 'Sara Mahmoud',
       customerPhone: '01234567890',
-      customerCity: 'Alexandria',
+      customerAddress: 'Alexandria',
       status: 'PENDING',
-      subtotal: 950.0,
-      shippingFee: 75.0,
-      totalAmount: 1025.0,
+      shippingCost: 75.0,
+      codAmount: 1025.0,
+      totalAmount: 950.0,
       items: {
         create: [
-          { variantId: hoodie.variants[0].id, qty: 1, unitPrice: 950.0, totalLinePrice: 950.0 },
+          { variantId: hoodie.variants[0].id, qty: 1, unitPrice: 950.0, unitCost: 400.0 },
         ],
       },
     },
