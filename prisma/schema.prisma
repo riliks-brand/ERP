@@ -389,6 +389,7 @@ model ReturnRecord {
   forwardShipping   Decimal @db.Decimal(10, 2)
   returnShipping    Decimal @db.Decimal(10, 2)
   refurbishmentCost Decimal @default(0) @db.Decimal(10, 2)
+  platformCommission Decimal @default(0) @db.Decimal(10, 2)
   totalLoss         Decimal @db.Decimal(12, 2)
   returnedToStock   Boolean @default(false)
   createdAt         DateTime @default(now())
@@ -517,4 +518,33 @@ enum AuditAction {
   CREATE
   UPDATE
   REVERSE
+}
+
+// ============================================================================
+// 10. SMART GLOSSARY (القاموس الذكي)
+// ============================================================================
+
+model Glossary {
+  id             String            @id @default(uuid())
+  termEn         String
+  termAr         String
+  definitionEn   String
+  definitionAr   String
+  category       GlossaryCategory
+  relatedTerms   String[]          // IDs or slugs of related glossary items
+  slug           String            @unique
+  sortOrder      Int               @default(0)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([category])
+  @@map("glossary")
+}
+
+enum GlossaryCategory {
+  ACCOUNTING
+  MANUFACTURING
+  SHIPPING
+  INVENTORY
+  SALES
 }

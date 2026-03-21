@@ -25,12 +25,14 @@ const NAV_SECTIONS = [
       { href: "/orders", icon: "🛒", label: "Sales Orders" },
       { href: "/reconciliation", icon: "💳", label: "Reconciliation" },
       { href: "/returns", icon: "↩️", label: "Returns" },
+      { href: "/pricing", icon: "✨", label: "Smart Pricing" },
     ],
   },
   {
     title: "Finance",
     items: [
       { href: "/reports", icon: "📈", label: "Reports" },
+      { href: "/glossary", icon: "📖", label: "Smart Glossary" },
       { href: "/settings", icon: "⚙️", label: "Settings" },
     ],
   },

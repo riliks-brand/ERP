@@ -1,6 +1,7 @@
 "use client";
 
 import DashboardLayout from "@/components/DashboardLayout";
+import GlossaryTooltip from "@/components/GlossaryTooltip";
 
 export default function Home() {
   return (
@@ -14,7 +15,7 @@ export default function Home() {
       <div className="card-grid" style={{ marginBottom: "2rem" }}>
         <div className="card">
           <div className="kpi">
-            <span className="kpi-label">True Net Profit</span>
+            <span className="kpi-label"><GlossaryTooltip term="true-profit">True Net Profit</GlossaryTooltip></span>
             <span className="kpi-value text-success">EGP 0</span>
             <span className="kpi-trend up">+0% from last month</span>
           </div>
@@ -22,7 +23,7 @@ export default function Home() {
 
         <div className="card">
           <div className="kpi">
-            <span className="kpi-label">In-Transit Cash</span>
+            <span className="kpi-label"><GlossaryTooltip term="shipping-wallet">In-Transit Cash</GlossaryTooltip></span>
             <span className="kpi-value" style={{ color: "var(--color-info)" }}>
               EGP 0
             </span>
@@ -34,7 +35,7 @@ export default function Home() {
 
         <div className="card">
           <div className="kpi">
-            <span className="kpi-label">Cutting Efficiency</span>
+            <span className="kpi-label"><GlossaryTooltip term="wastage">Cutting Efficiency</GlossaryTooltip></span>
             <span className="kpi-value" style={{ color: "var(--color-warning)" }}>
               —%
             </span>
@@ -46,7 +47,7 @@ export default function Home() {
 
         <div className="card">
           <div className="kpi">
-            <span className="kpi-label">Return Loss (MTD)</span>
+            <span className="kpi-label"><GlossaryTooltip term="return-loss">Return Loss (MTD)</GlossaryTooltip></span>
             <span className="kpi-value text-danger">EGP 0</span>
             <span className="kpi-trend down">Shipping + refurbishment costs</span>
           </div>
