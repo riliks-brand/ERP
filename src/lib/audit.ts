@@ -33,3 +33,66 @@ export async function createAuditLog(payload: AuditPayload) {
     },
   });
 }
+
+/**
+ * Wraps a data-modifying operation to automatically generate an audit log.
+ */
+export async function withAuditLog<T>(
+  params: Omit<AuditPayload, "newValues">,
+  operation: () => Promise<T>
+): Promise<T> {
+  const result = await operation();
+  const newValues =
+    result && typeof result === "object" ? (result as Record<string, unknown>) : null;
+
+  await createAuditLog({
+    ...params,
+    newValues: newValues ?? undefined,
+  });
+
+  return result;
+}
+
+/**
+ * Fetches audit logs for a specific tenant with pagination and optional filters.
+ */
+export async function getAuditLogs(
+  tenantId: string,
+  options: {
+    page?: number;
+    perPage?: number;
+    tableName?: string;
+    userId?: string;
+  } = {}
+) {
+  const { page = 1, perPage = 50, tableName, userId } = options;
+
+  const where = {
+    tenantId,
+    ...(tableName && { tableName }),
+    ...(userId && { userId }),
+  };
+
+  const [logs, total] = await Promise.all([
+    prisma.auditLog.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * perPage,
+      take: perPage,
+      include: {
+        user: {
+          select: { fullName: true, email: true, role: true },
+        },
+      },
+    }),
+    prisma.auditLog.count({ where }),
+  ]);
+
+  return {
+    logs,
+    total,
+    totalPages: Math.ceil(total / perPage),
+    currentPage: page,
+  };
+}
+

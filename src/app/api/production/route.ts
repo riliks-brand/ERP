@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { transitionProductionOrder, recordWastage } from "@/lib/engines/production";
+import { withAuditLog } from "@/lib/audit";
 import { z } from "zod";
 
 export async function GET(req: NextRequest) {
@@ -92,10 +93,27 @@ export async function PATCH(req: NextRequest) {
   }
 
   try {
-    const updated = await transitionProductionOrder(parsed.data.orderId, parsed.data.targetStatus, {
-      tenantId,
-      userId,
+    const oldOrder = await prisma.productionOrder.findUnique({
+      where: { id: parsed.data.orderId },
+      select: { status: true },
     });
+
+    const updated = await withAuditLog(
+      {
+        tenantId,
+        userId: userId ?? undefined,
+        tableName: "production_orders",
+        recordId: parsed.data.orderId,
+        action: "UPDATE",
+        oldValues: oldOrder ? { status: oldOrder.status } : undefined,
+      },
+      () =>
+        transitionProductionOrder(parsed.data.orderId, parsed.data.targetStatus, {
+          tenantId,
+          userId: userId ?? undefined,
+        })
+    );
+
     return NextResponse.json(updated);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";

@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
+import { createClient } from "@/lib/supabase/client";
 
 const NAV_SECTIONS = [
   {
@@ -34,6 +35,7 @@ const NAV_SECTIONS = [
     items: [
       { href: "/reports", label: "Reports" },
       { href: "/glossary", label: "Smart Glossary" },
+      { href: "/audit", label: "Audit Trail" },
       { href: "/settings", label: "Settings" },
     ],
   },
@@ -41,6 +43,14 @@ const NAV_SECTIONS = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createClient();
+
+  async function handleLogout() {
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <aside className="sidebar">
@@ -69,9 +79,17 @@ export default function Sidebar() {
         ))}
       </ul>
 
-      <div style={{ padding: "0 1.5rem" }}>
+      <div style={{ padding: "0 1.5rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
         <ThemeToggle />
+        <button
+          onClick={handleLogout}
+          className="btn btn-outline"
+          style={{ width: "100%", fontSize: "0.8rem" }}
+        >
+          Logout
+        </button>
       </div>
     </aside>
   );
 }
+
