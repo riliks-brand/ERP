@@ -1,7 +1,7 @@
 "use client";
 
 import DashboardLayout from "@/components/DashboardLayout";
-import { useState } from "react";
+import React, { useState } from "react";
 
 interface Product {
   id: string;
@@ -116,9 +116,8 @@ export default function ProductsPage() {
           </thead>
           <tbody>
             {DEMO_PRODUCTS.map((product) => (
-              <>
+              <React.Fragment key={product.id}>
                 <tr
-                  key={product.id}
                   onClick={() => setExpandedProduct(expandedProduct === product.id ? null : product.id)}
                   style={{ cursor: "pointer" }}
                 >
@@ -168,7 +167,7 @@ export default function ProductsPage() {
                       <td className="text-mono">{v.stockQty}</td>
                     </tr>
                   ))}
-              </>
+              </React.Fragment>
             ))}
           </tbody>
         </table>

@@ -1,6 +1,24 @@
 @import "tailwindcss";
 
 :root {
+  /* LIGHT MODE (Modern Minimalism) */
+  --color-bg: #f5f6f8;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #f0f2f5;
+  --color-border: #e0e0e0;
+  --color-text: #333333;
+  --color-text-muted: #6b7280;
+  --color-primary: #0056D6; /* Royal Blue */
+  --color-primary-light: #2c7ce6;
+  --color-success: #059669;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+  --color-info: #2563eb;
+  color-scheme: light;
+}
+
+.dark {
+  /* DARK MODE */
   --color-bg: #0a0a0f;
   --color-surface: #12121a;
   --color-surface-elevated: #1a1a26;
@@ -13,8 +31,7 @@
   --color-warning: #fdcb6e;
   --color-danger: #e17055;
   --color-info: #74b9ff;
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  color-scheme: dark;
 }
 
 @font-face {
@@ -30,9 +47,7 @@
   padding: 0;
 }
 
-html {
-  color-scheme: dark;
-}
+
 
 body {
   font-family: var(--font-sans);

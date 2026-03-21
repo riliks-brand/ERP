@@ -2,38 +2,39 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import ThemeToggle from "./ThemeToggle";
 
 const NAV_SECTIONS = [
   {
     title: "Overview",
     items: [
-      { href: "/", icon: "📊", label: "Dashboard" },
+      { href: "/", label: "Dashboard" },
     ],
   },
   {
     title: "Production",
     items: [
-      { href: "/products", icon: "📦", label: "Products & BOM" },
-      { href: "/raw-materials", icon: "🧵", label: "Raw Materials" },
-      { href: "/production", icon: "🏭", label: "Production Orders" },
-      { href: "/vendors", icon: "🤝", label: "Vendors" },
+      { href: "/products", label: "Products & BOM" },
+      { href: "/raw-materials", label: "Raw Materials" },
+      { href: "/production", label: "Production Orders" },
+      { href: "/vendors", label: "Vendors" },
     ],
   },
   {
     title: "Sales & Logistics",
     items: [
-      { href: "/orders", icon: "🛒", label: "Sales Orders" },
-      { href: "/reconciliation", icon: "💳", label: "Reconciliation" },
-      { href: "/returns", icon: "↩️", label: "Returns" },
-      { href: "/pricing", icon: "✨", label: "Smart Pricing" },
+      { href: "/orders", label: "Sales Orders" },
+      { href: "/reconciliation", label: "Reconciliation" },
+      { href: "/returns", label: "Returns" },
+      { href: "/pricing", label: "Smart Pricing" },
     ],
   },
   {
     title: "Finance",
     items: [
-      { href: "/reports", icon: "📈", label: "Reports" },
-      { href: "/glossary", icon: "📖", label: "Smart Glossary" },
-      { href: "/settings", icon: "⚙️", label: "Settings" },
+      { href: "/reports", label: "Reports" },
+      { href: "/glossary", label: "Smart Glossary" },
+      { href: "/settings", label: "Settings" },
     ],
   },
 ];
@@ -59,7 +60,7 @@ export default function Sidebar() {
                     href={item.href}
                     className={pathname === item.href ? "active" : ""}
                   >
-                    {item.icon} {item.label}
+                    {item.label}
                   </Link>
                 </li>
               ))}
@@ -67,6 +68,10 @@ export default function Sidebar() {
           </li>
         ))}
       </ul>
+
+      <div style={{ padding: "0 1.5rem" }}>
+        <ThemeToggle />
+      </div>
     </aside>
   );
 }

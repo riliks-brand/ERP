@@ -57,13 +57,13 @@ export default function Home() {
       {/* Quick Actions */}
       <div className="card" style={{ marginBottom: "1.5rem" }}>
         <h3 style={{ marginBottom: "1rem", fontSize: "1rem", fontWeight: 600 }}>
-          ⚡ Quick Actions
+          Quick Actions
         </h3>
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
           <a href="/products" className="btn btn-primary">+ New Product</a>
           <a href="/raw-materials" className="btn btn-outline">+ Add Raw Material</a>
           <a href="/production" className="btn btn-outline">+ Production Order</a>
-          <a href="/reconciliation" className="btn btn-outline">📤 Upload Shipping File</a>
+          <a href="/reconciliation" className="btn btn-outline">Upload Shipping File</a>
         </div>
       </div>
 
@@ -71,19 +71,19 @@ export default function Home() {
       <div className="card-grid">
         <div className="card">
           <h4 style={{ marginBottom: "0.75rem", fontSize: "0.9rem", fontWeight: 600 }}>
-            🏭 Recent Production
+            Recent Production
           </h4>
           <p className="text-muted" style={{ fontSize: "0.85rem" }}>No production orders yet.</p>
         </div>
         <div className="card">
           <h4 style={{ marginBottom: "0.75rem", fontSize: "0.9rem", fontWeight: 600 }}>
-            ⚠️ Dead Stock Alerts
+            Dead Stock Alerts
           </h4>
           <p className="text-muted" style={{ fontSize: "0.85rem" }}>No stale inventory detected.</p>
         </div>
         <div className="card">
           <h4 style={{ marginBottom: "0.75rem", fontSize: "0.9rem", fontWeight: 600 }}>
-            💳 Pending Reconciliations
+            Pending Reconciliations
           </h4>
           <p className="text-muted" style={{ fontSize: "0.85rem" }}>Upload a shipping file to begin.</p>
         </div>

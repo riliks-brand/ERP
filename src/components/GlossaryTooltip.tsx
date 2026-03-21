@@ -44,8 +44,10 @@ export default function GlossaryTooltip({ term, children }: TooltipProps) {
       style={{ position: "relative", cursor: "help" }}
     >
       <span style={{
-        borderBottom: "1px dashed var(--color-primary-light)",
+        borderBottom: "1px dashed var(--color-primary)",
         paddingBottom: 1,
+        color: visible ? "var(--color-primary)" : "inherit",
+        transition: "color 0.2s"
       }}>
         {children}
       </span>
@@ -60,8 +62,8 @@ export default function GlossaryTooltip({ term, children }: TooltipProps) {
             transform: "translateX(-50%)",
             width: 320,
             padding: "0.85rem 1rem",
-            background: "var(--color-surface-elevated)",
-            border: "1px solid var(--color-border)",
+            background: "var(--color-primary)",
+            border: "none",
             borderRadius: 10,
             boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
             zIndex: 200,
@@ -76,9 +78,9 @@ export default function GlossaryTooltip({ term, children }: TooltipProps) {
             transform: "translateX(-50%) rotate(45deg)",
             width: 12,
             height: 12,
-            background: "var(--color-surface-elevated)",
-            borderRight: "1px solid var(--color-border)",
-            borderBottom: "1px solid var(--color-border)",
+            background: "var(--color-primary)",
+            borderRight: "none",
+            borderBottom: "none",
           }} />
 
           {/* Header */}
@@ -89,20 +91,28 @@ export default function GlossaryTooltip({ term, children }: TooltipProps) {
             marginBottom: "0.5rem",
           }}>
             <div>
-              <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "var(--color-primary-light)" }}>
+              <div style={{ fontWeight: 700, fontSize: "0.85rem", color: "white" }}>
                 {entry.termEn}
               </div>
-              <div style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", direction: "rtl" }}>
+              <div style={{ fontSize: "0.75rem", color: "rgba(255, 255, 255, 0.8)", direction: "rtl" }}>
                 {entry.termAr}
               </div>
             </div>
-            <span className={`badge badge-neutral`} style={{ fontSize: "0.6rem" }}>
+            <span style={{ 
+              fontSize: "0.6rem", 
+              padding: "0.2rem 0.5rem", 
+              background: "rgba(255, 255, 255, 0.2)", 
+              borderRadius: "100px",
+              color: "white",
+              fontWeight: 600,
+              textTransform: "uppercase"
+            }}>
               {entry.category}
             </span>
           </div>
 
           {/* EN Definition */}
-          <p style={{ fontSize: "0.78rem", lineHeight: 1.5, marginBottom: "0.4rem", color: "var(--color-text)" }}>
+          <p style={{ fontSize: "0.78rem", lineHeight: 1.5, marginBottom: "0.4rem", color: "white" }}>
             {entry.definitionEn}
           </p>
 
@@ -110,10 +120,10 @@ export default function GlossaryTooltip({ term, children }: TooltipProps) {
           <p style={{
             fontSize: "0.78rem",
             lineHeight: 1.6,
-            color: "var(--color-text-muted)",
+            color: "rgba(255, 255, 255, 0.9)",
             direction: "rtl",
             textAlign: "right",
-            borderTop: "1px solid var(--color-border)",
+            borderTop: "1px dashed rgba(255, 255, 255, 0.3)",
             paddingTop: "0.4rem",
             marginBottom: 0,
           }}>
@@ -127,8 +137,8 @@ export default function GlossaryTooltip({ term, children }: TooltipProps) {
               display: "block",
               marginTop: "0.5rem",
               fontSize: "0.7rem",
-              color: "var(--color-primary-light)",
-              textDecoration: "none",
+              color: "white",
+              textDecoration: "underline",
             }}
           >
             📖 View in glossary →
