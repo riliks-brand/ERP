@@ -33,7 +33,7 @@ export interface ReconciliationResult {
  * Run reconciliation against parsed shipping rows.
  */
 export async function reconcileShipment(
-  tenantId: string,
+  brandId: string,
   shippingProviderId: string,
   fileName: string,
   rows: ParsedShippingRow[]
@@ -41,7 +41,7 @@ export async function reconcileShipment(
   // 1. Create the reconciliation header
   const recon = await prisma.shippingReconciliation.create({
     data: {
-      tenantId,
+      brandId,
       shippingProviderId,
       fileName,
       totalRows: rows.length,
@@ -64,7 +64,7 @@ export async function reconcileShipment(
   for (const row of rows) {
     // 3. Find the internal order
     const order = await prisma.salesOrder.findFirst({
-      where: { tenantId, orderNumber: row.orderNumber },
+      where: { brandId, orderNumber: row.orderNumber },
     });
 
     let flag: ReconcileFlag;

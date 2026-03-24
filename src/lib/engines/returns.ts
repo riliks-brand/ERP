@@ -23,7 +23,7 @@ interface ProcessReturnPayload {
   returnShipping: number;
   refurbishmentCost?: number;
   platformCommission?: number; // v2: Shopify/WooCommerce fee not refunded
-  tenantId: string;
+  brandId: string;
   userId?: string;
 }
 
@@ -36,7 +36,7 @@ export async function processReturn(payload: ProcessReturnPayload) {
     returnShipping,
     refurbishmentCost = 0,
     platformCommission = 0,
-    tenantId,
+    brandId,
     userId,
   } = payload;
 
@@ -81,7 +81,7 @@ export async function processReturn(payload: ProcessReturnPayload) {
 
     // 4. Audit with full breakdown
     await createAuditLog({
-      tenantId,
+      brandId,
       userId,
       tableName: "return_records",
       recordId: record.id,
@@ -120,7 +120,7 @@ interface ShippingReturnFlag {
  * Usage: call after uploading shipping statement + processing returns.
  */
 export async function reconcileShippingReturns(
-  tenantId: string,
+  brandId: string,
   reconRows: { orderNumber: string; returnFee: number }[],
   receivedOrderNumbers: string[] // Orders physically received in warehouse
 ): Promise<ShippingReturnFlag[]> {

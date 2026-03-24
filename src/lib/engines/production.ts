@@ -34,7 +34,7 @@ const VALID_TRANSITIONS: Record<ProductionStatus, ProductionStatus[]> = {
 export async function transitionProductionOrder(
   orderId: string,
   targetStatus: ProductionStatus,
-  context: { tenantId: string; userId?: string }
+  context: { brandId: string; userId?: string }
 ) {
   // Wrap the entire transition in a database transaction
   return prisma.$transaction(
@@ -142,7 +142,7 @@ export async function transitionProductionOrder(
       });
 
       await createAuditLog({
-        tenantId: context.tenantId,
+        brandId: context.brandId,
         userId: context.userId,
         tableName: "production_orders",
         recordId: orderId,

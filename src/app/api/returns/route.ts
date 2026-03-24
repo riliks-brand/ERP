@@ -17,9 +17,9 @@ const ReturnSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const tenantId = req.headers.get("x-tenant-id");
+  const brandId = req.headers.get("x-brand-id");
   const userId = req.headers.get("x-user-id") ?? undefined;
-  if (!tenantId) return NextResponse.json({ error: "Missing tenant" }, { status: 400 });
+  if (!brandId) return NextResponse.json({ error: "Missing brand" }, { status: 400 });
 
   const body = await req.json();
   const parsed = ReturnSchema.safeParse(body);
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const record = await processReturn({ ...parsed.data, tenantId, userId });
+    const record = await processReturn({ ...parsed.data, brandId, userId });
     return NextResponse.json(record, { status: 201 });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";

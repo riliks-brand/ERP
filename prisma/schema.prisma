@@ -18,13 +18,17 @@ datasource db {
 // 1. TENANCY & AUTH
 // ============================================================================
 
-model Tenant {
-  id        String   @id @default(uuid())
-  name      String
-  slug      String   @unique
-  currency  String   @default("EGP")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Brand {
+  id              String   @id @default(uuid())
+  name            String
+  slug            String   @unique
+  currency        String   @default("EGP")
+  logoUrl         String?
+  customDomain    String?  @unique
+  commercialReg   String?
+  subscriptionTier SubscriptionTier @default(FREE)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   users              User[]
   products           Product[]
@@ -37,12 +41,18 @@ model Tenant {
   exchangeRates      ExchangeRate[]
   auditLogs          AuditLog[]
 
-  @@map("tenants")
+  @@map("brands")
+}
+
+enum SubscriptionTier {
+  FREE
+  PRO
+  ENTERPRISE
 }
 
 model User {
   id           String   @id @default(uuid())
-  tenantId     String
+  brandId      String?  // Made optional so SUPER_ADMIN isn't tied to a specific brand
   email        String
   passwordHash String
   fullName     String
@@ -51,18 +61,19 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  tenant    Tenant     @relation(fields: [tenantId], references: [id])
+  brand     Brand?     @relation(fields: [brandId], references: [id])
   auditLogs AuditLog[]
 
-  @@unique([tenantId, email])
+  @@unique([brandId, email])
   @@map("users")
 }
 
 enum UserRole {
-  OWNER
-  ADMIN
+  SUPER_ADMIN // System SaaS Owner
+  OWNER       // Brand Owner
+  ADMIN       // Brand Manager
   ACCOUNTANT
-  STAFF
+  STAFF       // Warehouse/Shipping
 }
 
 // ============================================================================
@@ -71,7 +82,7 @@ enum UserRole {
 
 model RawMaterial {
   id          String          @id @default(uuid())
-  tenantId    String
+  brandId    String
   name        String
   sku         String
   unit        MaterialUnit
@@ -84,11 +95,11 @@ model RawMaterial {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
-  tenant         Tenant              @relation(fields: [tenantId], references: [id])
+  brand         Brand              @relation(fields: [brandId], references: [id])
   ledgerEntries  InventoryLedger[]
   bomItems       BomItem[]
 
-  @@unique([tenantId, sku])
+  @@unique([brandId, sku])
   @@map("raw_materials")
 }
 
@@ -137,7 +148,7 @@ enum LedgerType {
 
 model Product {
   id          String   @id @default(uuid())
-  tenantId    String
+  brandId    String
   name        String
   baseSku     String
   description String?
@@ -147,11 +158,11 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  tenant    Tenant          @relation(fields: [tenantId], references: [id])
+  brand    Brand          @relation(fields: [brandId], references: [id])
   variants  ProductVariant[]
   bundleItems BundleItem[]  @relation("BundleParent")
 
-  @@unique([tenantId, baseSku])
+  @@unique([brandId, baseSku])
   @@map("products")
 }
 
@@ -214,7 +225,7 @@ model BundleItem {
 
 model Vendor {
   id         String     @id @default(uuid())
-  tenantId   String
+  brandId   String
   name       String
   type       VendorType
   phone      String?
@@ -224,7 +235,7 @@ model Vendor {
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
 
-  tenant            Tenant              @relation(fields: [tenantId], references: [id])
+  brand            Brand              @relation(fields: [brandId], references: [id])
   ledgerEntries     VendorLedger[]
   productionOrders  ProductionOrder[]
 
@@ -270,7 +281,7 @@ enum VendorTxnType {
 
 model ProductionOrder {
   id              String              @id @default(uuid())
-  tenantId        String
+  brandId        String
   orderNumber     String
   vendorId        String?
   status          ProductionStatus    @default(DRAFT)
@@ -280,12 +291,12 @@ model ProductionOrder {
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
 
-  tenant  Tenant  @relation(fields: [tenantId], references: [id])
+  brand  Brand  @relation(fields: [brandId], references: [id])
   vendor  Vendor? @relation(fields: [vendorId], references: [id])
   items   ProductionOrderItem[]
   wastageRecords WastageRecord[]
 
-  @@unique([tenantId, orderNumber])
+  @@unique([brandId, orderNumber])
   @@map("production_orders")
 }
 
@@ -332,7 +343,7 @@ model WastageRecord {
 
 model SalesOrder {
   id                String       @id @default(uuid())
-  tenantId          String
+  brandId          String
   orderNumber       String
   customerName      String?
   customerPhone     String?
@@ -348,12 +359,12 @@ model SalesOrder {
   createdAt         DateTime     @default(now())
   updatedAt         DateTime     @updatedAt
 
-  tenant           Tenant            @relation(fields: [tenantId], references: [id])
+  brand           Brand            @relation(fields: [brandId], references: [id])
   shippingProvider ShippingProvider? @relation(fields: [shippingProviderId], references: [id])
   items            SalesOrderItem[]
   returnRecord     ReturnRecord?
 
-  @@unique([tenantId, orderNumber])
+  @@unique([brandId, orderNumber])
   @@index([status])
   @@map("sales_orders")
 }
@@ -406,7 +417,7 @@ model ReturnRecord {
 
 model ShippingProvider {
   id          String   @id @default(uuid())
-  tenantId    String
+  brandId    String
   name        String
   code        String
   agreedRate  Decimal  @default(0) @db.Decimal(10, 2)
@@ -414,17 +425,17 @@ model ShippingProvider {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  tenant          Tenant                   @relation(fields: [tenantId], references: [id])
+  brand          Brand                   @relation(fields: [brandId], references: [id])
   orders          SalesOrder[]
   reconciliations ShippingReconciliation[]
 
-  @@unique([tenantId, code])
+  @@unique([brandId, code])
   @@map("shipping_providers")
 }
 
 model ShippingReconciliation {
   id                 String             @id @default(uuid())
-  tenantId           String
+  brandId           String
   shippingProviderId String
   fileName           String
   uploadedAt         DateTime           @default(now())
@@ -435,7 +446,7 @@ model ShippingReconciliation {
   netPayout          Decimal            @default(0) @db.Decimal(14, 2)
   status             ReconciliationStatus @default(PENDING)
 
-  tenant           Tenant                          @relation(fields: [tenantId], references: [id])
+  brand           Brand                          @relation(fields: [brandId], references: [id])
   shippingProvider ShippingProvider                @relation(fields: [shippingProviderId], references: [id])
   rows             ShippingReconciliationRow[]
 
@@ -478,16 +489,16 @@ enum ReconcileFlag {
 
 model ExchangeRate {
   id         String   @id @default(uuid())
-  tenantId   String
+  brandId   String
   fromCurrency String
   toCurrency   String
   rate       Decimal  @db.Decimal(12, 6)
   isManual   Boolean  @default(false)
   effectiveAt DateTime @default(now())
 
-  tenant Tenant @relation(fields: [tenantId], references: [id])
+  brand Brand @relation(fields: [brandId], references: [id])
 
-  @@index([tenantId, fromCurrency, toCurrency])
+  @@index([brandId, fromCurrency, toCurrency])
   @@map("exchange_rates")
 }
 
@@ -497,7 +508,7 @@ model ExchangeRate {
 
 model AuditLog {
   id         String   @id @default(uuid())
-  tenantId   String
+  brandId   String
   userId     String?
   tableName  String
   recordId   String
@@ -507,11 +518,11 @@ model AuditLog {
   ipAddress  String?
   createdAt  DateTime @default(now())
 
-  tenant Tenant @relation(fields: [tenantId], references: [id])
+  brand Brand @relation(fields: [brandId], references: [id])
   user   User?  @relation(fields: [userId], references: [id])
 
-  @@index([tenantId, tableName, recordId])
-  @@index([tenantId, createdAt])
+  @@index([brandId, tableName, recordId])
+  @@index([brandId, createdAt])
   @@map("audit_logs")
 }
 

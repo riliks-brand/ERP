@@ -12,11 +12,11 @@ import { withAuditLog } from "@/lib/audit";
 import { z } from "zod";
 
 export async function GET(req: NextRequest) {
-  const tenantId = req.headers.get("x-tenant-id");
-  if (!tenantId) return NextResponse.json({ error: "Missing tenant" }, { status: 400 });
+  const brandId = req.headers.get("x-brand-id");
+  if (!brandId) return NextResponse.json({ error: "Missing brand" }, { status: 400 });
 
   const orders = await prisma.productionOrder.findMany({
-    where: { tenantId },
+    where: { brandId },
     include: { items: { include: { variant: true } }, vendor: true },
     orderBy: { createdAt: "desc" },
   });
@@ -39,8 +39,8 @@ const CreateSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const tenantId = req.headers.get("x-tenant-id");
-  if (!tenantId) return NextResponse.json({ error: "Missing tenant" }, { status: 400 });
+  const brandId = req.headers.get("x-brand-id");
+  if (!brandId) return NextResponse.json({ error: "Missing brand" }, { status: 400 });
 
   const body = await req.json();
   const parsed = CreateSchema.safeParse(body);
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
 
   const order = await prisma.productionOrder.create({
     data: {
-      tenantId,
+      brandId,
       orderNumber: parsed.data.orderNumber,
       vendorId: parsed.data.vendorId,
       laborCostPerUnit: parsed.data.laborCostPerUnit,
@@ -82,9 +82,9 @@ const TransitionSchema = z.object({
 });
 
 export async function PATCH(req: NextRequest) {
-  const tenantId = req.headers.get("x-tenant-id");
+  const brandId = req.headers.get("x-brand-id");
   const userId = req.headers.get("x-user-id") ?? undefined;
-  if (!tenantId) return NextResponse.json({ error: "Missing tenant" }, { status: 400 });
+  if (!brandId) return NextResponse.json({ error: "Missing brand" }, { status: 400 });
 
   const body = await req.json();
   const parsed = TransitionSchema.safeParse(body);
@@ -100,7 +100,7 @@ export async function PATCH(req: NextRequest) {
 
     const updated = await withAuditLog(
       {
-        tenantId,
+        brandId,
         userId: userId ?? undefined,
         tableName: "production_orders",
         recordId: parsed.data.orderId,
@@ -109,7 +109,7 @@ export async function PATCH(req: NextRequest) {
       },
       () =>
         transitionProductionOrder(parsed.data.orderId, parsed.data.targetStatus, {
-          tenantId,
+          brandId,
           userId: userId ?? undefined,
         })
     );

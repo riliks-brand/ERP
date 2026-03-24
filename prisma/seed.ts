@@ -5,8 +5,8 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Starting database seed...');
 
-  // 1. Create a Default Tenant
-  const tenant = await prisma.tenant.upsert({
+  // 1. Create a Default Brand
+  const brand = await prisma.brand.upsert({
     where: { slug: 'brand-hq' },
     update: {},
     create: {
@@ -16,11 +16,11 @@ async function main() {
     },
   });
 
-  const tenantId = tenant.id;
-  console.log(`✅ Tenant Ready: ${tenant.name}`);
+  const brandId = brand.id;
+  console.log(`✅ Brand Ready: ${brand.name}`);
 
-  // 1.5 Clean current tenant data to prevent unique constraint conflicts on re-runs
-  console.log('🧹 Cleaning existing tenant data...');
+  // 1.5 Clean current brand data to prevent unique constraint conflicts on re-runs
+  console.log('🧹 Cleaning existing brand data...');
   await prisma.glossary.deleteMany();
   await prisma.salesOrderItem.deleteMany();
   await prisma.salesOrder.deleteMany();
@@ -39,7 +39,7 @@ async function main() {
   // 2. Create Raw Materials (Fabrics, Thread, Packaging)
   const cottonRoll = await prisma.rawMaterial.create({
     data: {
-      tenantId,
+      brandId,
       name: 'Premium Egyptian Cotton (Black)',
       sku: 'RM-COT-BLK-01',
       unit: 'KILOGRAM',
@@ -64,7 +64,7 @@ async function main() {
 
   const shippingBox = await prisma.rawMaterial.create({
     data: {
-      tenantId,
+      brandId,
       name: 'Branded Shipping Box (Medium)',
       sku: 'RM-PKG-BOX-M',
       unit: 'PIECE',
@@ -92,7 +92,7 @@ async function main() {
   // 3. Create Products & Variants
   const hoodie = await prisma.product.create({
     data: {
-      tenantId,
+      brandId,
       name: 'Oversized Signature Hoodie',
       baseSku: 'PRD-HOODIE-SIG',
       category: 'Winter Wear',
@@ -122,7 +122,7 @@ async function main() {
   // 5. Create Vendors (Supplier & Workshop)
   const factory = await prisma.vendor.create({
     data: {
-      tenantId,
+      brandId,
       name: 'Al-Ahram Sewing Factory',
       type: 'SEWING_WORKSHOP',
       phone: '01012345678',
@@ -135,7 +135,7 @@ async function main() {
   // 6. Create Sales Orders
   await prisma.salesOrder.create({
     data: {
-      tenantId,
+      brandId,
       orderNumber: 'ORD-1001',
       customerName: 'Ahmed Youssef',
       customerPhone: '01198765432',
@@ -157,7 +157,7 @@ async function main() {
 
   await prisma.salesOrder.create({
     data: {
-      tenantId,
+      brandId,
       orderNumber: 'ORD-1002',
       customerName: 'Sara Mahmoud',
       customerPhone: '01234567890',

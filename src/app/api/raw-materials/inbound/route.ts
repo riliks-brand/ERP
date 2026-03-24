@@ -17,9 +17,9 @@ const InboundSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const tenantId = req.headers.get("x-tenant-id");
+  const brandId = req.headers.get("x-brand-id");
   const userId = req.headers.get("x-user-id") ?? undefined;
-  if (!tenantId) return NextResponse.json({ error: "Missing tenant" }, { status: 400 });
+  if (!brandId) return NextResponse.json({ error: "Missing brand" }, { status: 400 });
 
   const body = await req.json();
   const parsed = InboundSchema.safeParse(body);
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const entry = await recordInbound({ ...parsed.data, tenantId, userId });
+    const entry = await recordInbound({ ...parsed.data, brandId, userId });
     return NextResponse.json(entry, { status: 201 });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";

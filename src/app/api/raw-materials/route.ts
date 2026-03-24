@@ -12,11 +12,11 @@ import { z } from "zod";
 
 // ── GET — List raw materials ──
 export async function GET(req: NextRequest) {
-  const tenantId = req.headers.get("x-tenant-id");
-  if (!tenantId) return NextResponse.json({ error: "Missing tenant" }, { status: 400 });
+  const brandId = req.headers.get("x-brand-id");
+  if (!brandId) return NextResponse.json({ error: "Missing brand" }, { status: 400 });
 
   const materials = await prisma.rawMaterial.findMany({
-    where: { tenantId, isActive: true },
+    where: { brandId, isActive: true },
     orderBy: { name: "asc" },
   });
 
@@ -33,8 +33,8 @@ const CreateSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const tenantId = req.headers.get("x-tenant-id");
-  if (!tenantId) return NextResponse.json({ error: "Missing tenant" }, { status: 400 });
+  const brandId = req.headers.get("x-brand-id");
+  if (!brandId) return NextResponse.json({ error: "Missing brand" }, { status: 400 });
 
   const body = await req.json();
   const parsed = CreateSchema.safeParse(body);
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   }
 
   const material = await prisma.rawMaterial.create({
-    data: { tenantId, ...parsed.data },
+    data: { brandId, ...parsed.data },
   });
 
   return NextResponse.json(material, { status: 201 });

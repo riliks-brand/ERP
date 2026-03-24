@@ -9,11 +9,11 @@ import { reconcileShipment } from "@/lib/engines/reconciliation";
 import prisma from "@/lib/prisma";
 
 export async function GET(req: NextRequest) {
-  const tenantId = req.headers.get("x-tenant-id");
-  if (!tenantId) return NextResponse.json({ error: "Missing tenant" }, { status: 400 });
+  const brandId = req.headers.get("x-brand-id");
+  if (!brandId) return NextResponse.json({ error: "Missing brand" }, { status: 400 });
 
   const reconciliations = await prisma.shippingReconciliation.findMany({
-    where: { tenantId },
+    where: { brandId },
     include: { shippingProvider: true },
     orderBy: { uploadedAt: "desc" },
   });
@@ -22,8 +22,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const tenantId = req.headers.get("x-tenant-id");
-  if (!tenantId) return NextResponse.json({ error: "Missing tenant" }, { status: 400 });
+  const brandId = req.headers.get("x-brand-id");
+  if (!brandId) return NextResponse.json({ error: "Missing brand" }, { status: 400 });
 
   const formData = await req.formData();
   const file = formData.get("file") as File | null;
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
     const rows = parseShippingFile(buffer, mapping);
-    const result = await reconcileShipment(tenantId, providerId, file.name, rows);
+    const result = await reconcileShipment(brandId, providerId, file.name, rows);
     return NextResponse.json(result, { status: 201 });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Parsing error";

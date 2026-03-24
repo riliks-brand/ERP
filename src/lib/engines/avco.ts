@@ -21,7 +21,7 @@ interface InboundPayload {
   landedCost?: number;
   reference?: string;
   notes?: string;
-  tenantId: string;
+  brandId: string;
   userId?: string;
 }
 
@@ -36,7 +36,7 @@ export async function recordInbound(payload: InboundPayload) {
     landedCost = 0,
     reference,
     notes,
-    tenantId,
+    brandId,
     userId,
   } = payload;
 
@@ -90,7 +90,7 @@ export async function recordInbound(payload: InboundPayload) {
 
     // Audit with old vs new values
     await createAuditLog({
-      tenantId,
+      brandId,
       userId,
       tableName: "raw_materials",
       recordId: rawMaterialId,
@@ -112,7 +112,7 @@ interface DelayedLandedCostPayload {
   amount: number; // Additional transport/customs cost arriving late
   reference?: string;
   notes?: string;
-  tenantId: string;
+  brandId: string;
   userId?: string;
 }
 
@@ -124,7 +124,7 @@ interface DelayedLandedCostPayload {
  * newAvgCost = (currentTotalValue + delayedCost) / currentTotalQty
  */
 export async function addDelayedLandedCost(payload: DelayedLandedCostPayload) {
-  const { rawMaterialId, amount, reference, notes, tenantId, userId } = payload;
+  const { rawMaterialId, amount, reference, notes, brandId, userId } = payload;
 
   if (amount <= 0) throw new Error("Delayed landed cost must be positive.");
 
@@ -175,7 +175,7 @@ export async function addDelayedLandedCost(payload: DelayedLandedCostPayload) {
     });
 
     await createAuditLog({
-      tenantId,
+      brandId,
       userId,
       tableName: "raw_materials",
       recordId: rawMaterialId,
@@ -197,7 +197,7 @@ interface OutboundPayload {
   qty: number;
   reference?: string;
   notes?: string;
-  tenantId: string;
+  brandId: string;
   userId?: string;
 }
 
@@ -205,7 +205,7 @@ interface OutboundPayload {
  * Records material consumption (OUTBOUND) for production at the current AVCO.
  */
 export async function recordOutbound(payload: OutboundPayload) {
-  const { rawMaterialId, qty, reference, notes, tenantId, userId } = payload;
+  const { rawMaterialId, qty, reference, notes, brandId, userId } = payload;
 
   return prisma.$transaction(async (tx) => {
     // Row-level lock
@@ -257,7 +257,7 @@ export async function recordOutbound(payload: OutboundPayload) {
     });
 
     await createAuditLog({
-      tenantId,
+      brandId,
       userId,
       tableName: "inventory_ledger",
       recordId: entry.id,

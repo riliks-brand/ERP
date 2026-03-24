@@ -9,7 +9,7 @@ import { Prisma } from "@prisma/client";
 import type { AuditAction } from "@prisma/client";
 
 interface AuditPayload {
-  tenantId: string;
+  brandId: string;
   userId?: string;
   tableName: string;
   recordId: string;
@@ -22,7 +22,7 @@ interface AuditPayload {
 export async function createAuditLog(payload: AuditPayload) {
   return prisma.auditLog.create({
     data: {
-      tenantId: payload.tenantId,
+      brandId: payload.brandId,
       userId: payload.userId ?? null,
       tableName: payload.tableName,
       recordId: payload.recordId,
@@ -54,10 +54,10 @@ export async function withAuditLog<T>(
 }
 
 /**
- * Fetches audit logs for a specific tenant with pagination and optional filters.
+ * Fetches audit logs for a specific brand with pagination and optional filters.
  */
 export async function getAuditLogs(
-  tenantId: string,
+  brandId: string,
   options: {
     page?: number;
     perPage?: number;
@@ -68,7 +68,7 @@ export async function getAuditLogs(
   const { page = 1, perPage = 50, tableName, userId } = options;
 
   const where = {
-    tenantId,
+    brandId,
     ...(tableName && { tableName }),
     ...(userId && { userId }),
   };

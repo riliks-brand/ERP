@@ -13,7 +13,7 @@
 import prisma from "@/lib/prisma";
 
 interface CashFlowSnapshot {
-  tenantId: string;
+  brandId: string;
   generatedAt: string;
 
   // Current State
@@ -48,11 +48,11 @@ interface CashFlowAlert {
  * Generate a comprehensive 30-day cash flow forecast.
  */
 export async function generateCashFlowForecast(
-  tenantId: string
+  brandId: string
 ): Promise<CashFlowSnapshot> {
   // 1. In-Transit Cash from shipping wallets
   const shippingProviders = await prisma.shippingProvider.findMany({
-    where: { tenantId },
+    where: { brandId },
     select: { name: true, walletBalance: true },
   });
   const inTransitCash = shippingProviders.reduce(
@@ -62,7 +62,7 @@ export async function generateCashFlowForecast(
 
   // 2. Vendor Payables & Receivables
   const vendors = await prisma.vendor.findMany({
-    where: { tenantId },
+    where: { brandId },
     select: { name: true, type: true, balance: true },
   });
 
@@ -87,7 +87,7 @@ export async function generateCashFlowForecast(
 
   const collectedOrders = await prisma.salesOrder.findMany({
     where: {
-      tenantId,
+      brandId,
       status: "COLLECTED",
       updatedAt: { gte: thirtyDaysAgo },
     },
@@ -104,7 +104,7 @@ export async function generateCashFlowForecast(
   // 4. Expenses: vendor payments in last 30 days
   const recentPayments = await prisma.vendorLedger.findMany({
     where: {
-      vendor: { tenantId },
+      vendor: { brandId },
       type: "PAYMENT",
       createdAt: { gte: thirtyDaysAgo },
     },
@@ -158,7 +158,7 @@ export async function generateCashFlowForecast(
   }
 
   return {
-    tenantId,
+    brandId,
     generatedAt: new Date().toISOString(),
     inTransitCash,
     pendingVendorPayables,
