@@ -42,7 +42,6 @@ export default function LoginForm() {
       router.push(redirectTo);
       router.refresh();
     } else {
-      // Sign Up
       if (password.length < 6) {
         setError("Password must be at least 6 characters.");
         setLoading(false);
@@ -53,6 +52,7 @@ export default function LoginForm() {
         email,
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
             full_name: fullName,
             brand_name: brandName,
@@ -68,7 +68,7 @@ export default function LoginForm() {
       }
 
       setSuccess(
-        "Account created successfully! Check your email to confirm, then sign in."
+        "Account created! Check your email to confirm, then sign in."
       );
       setMode("signin");
       setPassword("");
@@ -76,26 +76,24 @@ export default function LoginForm() {
     }
   }
 
-  // ── Shared Styles ──
   const inputStyle: React.CSSProperties = {
     width: "100%",
     padding: "0.75rem 1rem",
-    border: "1px solid rgba(255,255,255,0.12)",
+    border: "1px solid #e0e0e0",
     borderRadius: 10,
     fontSize: "0.9rem",
-    background: "rgba(255,255,255,0.06)",
-    color: "#fff",
+    background: "#f8f9fb",
+    color: "#1a1a2e",
     outline: "none",
     transition: "border-color 0.25s, box-shadow 0.25s",
     boxSizing: "border-box" as const,
-    backdropFilter: "blur(4px)",
   };
 
   const labelStyle: React.CSSProperties = {
     display: "block",
     fontSize: "0.7rem",
     fontWeight: 600,
-    color: "rgba(255,255,255,0.5)",
+    color: "#888",
     marginBottom: "0.4rem",
     textTransform: "uppercase" as const,
     letterSpacing: "0.08em",
@@ -108,50 +106,19 @@ export default function LoginForm() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "linear-gradient(135deg, #0a0a0f 0%, #101024 40%, #0d1117 100%)",
+        background: "#f5f6f8",
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-        position: "relative",
-        overflow: "hidden",
       }}
     >
-      {/* Ambient glow */}
-      <div
-        style={{
-          position: "absolute",
-          top: "-30%",
-          left: "-10%",
-          width: "60%",
-          height: "60%",
-          background: "radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)",
-          filter: "blur(80px)",
-          pointerEvents: "none",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          bottom: "-20%",
-          right: "-10%",
-          width: "50%",
-          height: "50%",
-          background: "radial-gradient(circle, rgba(168,85,247,0.12) 0%, transparent 70%)",
-          filter: "blur(80px)",
-          pointerEvents: "none",
-        }}
-      />
-
       <div
         style={{
           width: "100%",
           maxWidth: 440,
           padding: "2.5rem",
-          background: "rgba(255,255,255,0.04)",
+          background: "#ffffff",
           borderRadius: 20,
-          border: "1px solid rgba(255,255,255,0.08)",
-          boxShadow: "0 24px 80px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)",
-          backdropFilter: "blur(20px)",
-          position: "relative",
-          zIndex: 1,
+          border: "1px solid #e8e8e8",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.06)",
         }}
       >
         {/* ── Header ── */}
@@ -176,7 +143,7 @@ export default function LoginForm() {
                 fontSize: "1.1rem",
                 fontWeight: 800,
                 color: "#fff",
-                boxShadow: "0 4px 16px rgba(99,102,241,0.4)",
+                boxShadow: "0 4px 12px rgba(99,102,241,0.3)",
               }}
             >
               R
@@ -185,7 +152,7 @@ export default function LoginForm() {
               style={{
                 fontSize: "1.4rem",
                 fontWeight: 700,
-                color: "#fff",
+                color: "#1a1a2e",
                 margin: 0,
                 letterSpacing: "-0.02em",
               }}
@@ -196,7 +163,7 @@ export default function LoginForm() {
           <p
             style={{
               fontSize: "0.8rem",
-              color: "rgba(255,255,255,0.45)",
+              color: "#999",
               margin: 0,
             }}
           >
@@ -208,11 +175,10 @@ export default function LoginForm() {
         <div
           style={{
             display: "flex",
-            background: "rgba(255,255,255,0.04)",
+            background: "#f0f1f4",
             borderRadius: 12,
             padding: 4,
             marginBottom: "1.75rem",
-            border: "1px solid rgba(255,255,255,0.06)",
           }}
         >
           {(["signin", "signup"] as AuthMode[]).map((tab) => (
@@ -234,14 +200,12 @@ export default function LoginForm() {
                 cursor: "pointer",
                 transition: "all 0.25s",
                 background:
-                  mode === tab
-                    ? "linear-gradient(135deg, #6366f1, #7c3aed)"
-                    : "transparent",
+                  mode === tab ? "#fff" : "transparent",
                 color:
-                  mode === tab ? "#fff" : "rgba(255,255,255,0.4)",
+                  mode === tab ? "#1a1a2e" : "#999",
                 boxShadow:
                   mode === tab
-                    ? "0 4px 12px rgba(99,102,241,0.3)"
+                    ? "0 2px 8px rgba(0,0,0,0.08)"
                     : "none",
               }}
             >
@@ -255,10 +219,10 @@ export default function LoginForm() {
           <div
             style={{
               padding: "0.7rem 1rem",
-              background: "rgba(239,68,68,0.12)",
-              border: "1px solid rgba(239,68,68,0.25)",
+              background: "#fef2f2",
+              border: "1px solid #fca5a5",
               borderRadius: 10,
-              color: "#fca5a5",
+              color: "#b91c1c",
               fontSize: "0.78rem",
               marginBottom: "1.25rem",
               display: "flex",
@@ -274,10 +238,10 @@ export default function LoginForm() {
           <div
             style={{
               padding: "0.7rem 1rem",
-              background: "rgba(34,197,94,0.12)",
-              border: "1px solid rgba(34,197,94,0.25)",
+              background: "#f0fdf4",
+              border: "1px solid #86efac",
               borderRadius: 10,
-              color: "#86efac",
+              color: "#166534",
               fontSize: "0.78rem",
               marginBottom: "1.25rem",
               display: "flex",
@@ -307,11 +271,11 @@ export default function LoginForm() {
                   required
                   style={inputStyle}
                   onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(99,102,241,0.5)";
-                    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.15)";
+                    e.currentTarget.style.borderColor = "#6366f1";
+                    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.1)";
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)";
+                    e.currentTarget.style.borderColor = "#e0e0e0";
                     e.currentTarget.style.boxShadow = "none";
                   }}
                 />
@@ -330,11 +294,11 @@ export default function LoginForm() {
                   required
                   style={inputStyle}
                   onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(99,102,241,0.5)";
-                    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.15)";
+                    e.currentTarget.style.borderColor = "#6366f1";
+                    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.1)";
                   }}
                   onBlur={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)";
+                    e.currentTarget.style.borderColor = "#e0e0e0";
                     e.currentTarget.style.boxShadow = "none";
                   }}
                 />
@@ -355,11 +319,11 @@ export default function LoginForm() {
               required
               style={inputStyle}
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = "rgba(99,102,241,0.5)";
-                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.15)";
+                e.currentTarget.style.borderColor = "#6366f1";
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.1)";
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)";
+                e.currentTarget.style.borderColor = "#e0e0e0";
                 e.currentTarget.style.boxShadow = "none";
               }}
             />
@@ -379,11 +343,11 @@ export default function LoginForm() {
               minLength={6}
               style={inputStyle}
               onFocus={(e) => {
-                e.currentTarget.style.borderColor = "rgba(99,102,241,0.5)";
-                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.15)";
+                e.currentTarget.style.borderColor = "#6366f1";
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.1)";
               }}
               onBlur={(e) => {
-                e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)";
+                e.currentTarget.style.borderColor = "#e0e0e0";
                 e.currentTarget.style.boxShadow = "none";
               }}
             />
@@ -395,9 +359,7 @@ export default function LoginForm() {
             style={{
               width: "100%",
               padding: "0.8rem",
-              background: loading
-                ? "rgba(99,102,241,0.4)"
-                : "linear-gradient(135deg, #6366f1, #7c3aed)",
+              background: loading ? "#a5b4fc" : "#6366f1",
               color: "#fff",
               border: "none",
               borderRadius: 10,
@@ -407,7 +369,7 @@ export default function LoginForm() {
               transition: "all 0.3s",
               boxShadow: loading
                 ? "none"
-                : "0 8px 24px rgba(99,102,241,0.35)",
+                : "0 4px 16px rgba(99,102,241,0.25)",
               letterSpacing: "0.02em",
             }}
           >
@@ -426,13 +388,13 @@ export default function LoginForm() {
           style={{
             textAlign: "center",
             fontSize: "0.65rem",
-            color: "rgba(255,255,255,0.25)",
+            color: "#bbb",
             marginTop: "2rem",
             letterSpacing: "0.05em",
           }}
         >
           Powered by{" "}
-          <span style={{ color: "rgba(168,85,247,0.7)", fontWeight: 600 }}>
+          <span style={{ color: "#6366f1", fontWeight: 600 }}>
             Riliks
           </span>{" "}
           — SaaS for Fashion Brands
