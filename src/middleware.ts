@@ -6,25 +6,25 @@ import { NextResponse, type NextRequest } from "next/server";
 // ---------------------------------------------------------------------------
 const ROLE_ACCESS: Record<string, string[]> = {
   // Financial pages — Owner, Admin, Accountant only
-  "/reports":        ["OWNER", "ADMIN", "ACCOUNTANT"],
-  "/reconciliation": ["OWNER", "ADMIN", "ACCOUNTANT"],
-  "/pricing":        ["OWNER", "ADMIN", "ACCOUNTANT"],
-  "/settings":       ["OWNER", "ADMIN"],
-  "/audit":          ["OWNER", "ADMIN"],
+  "/reports":        ["SUPER_ADMIN", "OWNER", "ADMIN", "ACCOUNTANT"],
+  "/reconciliation": ["SUPER_ADMIN", "OWNER", "ADMIN", "ACCOUNTANT"],
+  "/pricing":        ["SUPER_ADMIN", "OWNER", "ADMIN", "ACCOUNTANT"],
+  "/settings":       ["SUPER_ADMIN", "OWNER", "ADMIN"],
+  "/audit":          ["SUPER_ADMIN", "OWNER", "ADMIN"],
 
   // Production & Inventory — everyone
-  "/products":       ["OWNER", "ADMIN", "ACCOUNTANT", "STAFF"],
-  "/raw-materials":  ["OWNER", "ADMIN", "ACCOUNTANT", "STAFF"],
-  "/production":     ["OWNER", "ADMIN", "ACCOUNTANT", "STAFF"],
-  "/vendors":        ["OWNER", "ADMIN", "ACCOUNTANT", "STAFF"],
-  "/orders":         ["OWNER", "ADMIN", "ACCOUNTANT", "STAFF"],
-  "/returns":        ["OWNER", "ADMIN", "ACCOUNTANT", "STAFF"],
-  "/glossary":       ["OWNER", "ADMIN", "ACCOUNTANT", "STAFF"],
-  "/":               ["OWNER", "ADMIN", "ACCOUNTANT", "STAFF"],
+  "/products":       ["SUPER_ADMIN", "OWNER", "ADMIN", "ACCOUNTANT", "STAFF"],
+  "/raw-materials":  ["SUPER_ADMIN", "OWNER", "ADMIN", "ACCOUNTANT", "STAFF"],
+  "/production":     ["SUPER_ADMIN", "OWNER", "ADMIN", "ACCOUNTANT", "STAFF"],
+  "/vendors":        ["SUPER_ADMIN", "OWNER", "ADMIN", "ACCOUNTANT", "STAFF"],
+  "/orders":         ["SUPER_ADMIN", "OWNER", "ADMIN", "ACCOUNTANT", "STAFF"],
+  "/returns":        ["SUPER_ADMIN", "OWNER", "ADMIN", "ACCOUNTANT", "STAFF"],
+  "/glossary":       ["SUPER_ADMIN", "OWNER", "ADMIN", "ACCOUNTANT", "STAFF"],
+  "/":               ["SUPER_ADMIN", "OWNER", "ADMIN", "ACCOUNTANT", "STAFF"],
 };
 
 // Routes that don't require authentication
-const PUBLIC_ROUTES = ["/login", "/auth/callback"];
+const PUBLIC_ROUTES = ["/login", "/signup", "/auth/callback"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

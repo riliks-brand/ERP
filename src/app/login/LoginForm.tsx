@@ -4,36 +4,102 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter, useSearchParams } from "next/navigation";
 
+type AuthMode = "signin" | "signup";
+
 export default function LoginForm() {
   const supabase = createClient();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/";
 
+  const [mode, setMode] = useState<AuthMode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [brandName, setBrandName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(null);
 
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    if (mode === "signin") {
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (authError) {
-      setError(authError.message);
+      if (authError) {
+        setError(authError.message);
+        setLoading(false);
+        return;
+      }
+
+      router.push(redirectTo);
+      router.refresh();
+    } else {
+      // Sign Up
+      if (password.length < 6) {
+        setError("Password must be at least 6 characters.");
+        setLoading(false);
+        return;
+      }
+
+      const { error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            brand_name: brandName,
+            role: "OWNER",
+          },
+        },
+      });
+
+      if (signUpError) {
+        setError(signUpError.message);
+        setLoading(false);
+        return;
+      }
+
+      setSuccess(
+        "Account created successfully! Check your email to confirm, then sign in."
+      );
+      setMode("signin");
+      setPassword("");
       setLoading(false);
-      return;
     }
-
-    router.push(redirectTo);
-    router.refresh();
   }
+
+  // ── Shared Styles ──
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "0.75rem 1rem",
+    border: "1px solid rgba(255,255,255,0.12)",
+    borderRadius: 10,
+    fontSize: "0.9rem",
+    background: "rgba(255,255,255,0.06)",
+    color: "#fff",
+    outline: "none",
+    transition: "border-color 0.25s, box-shadow 0.25s",
+    boxSizing: "border-box" as const,
+    backdropFilter: "blur(4px)",
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    fontSize: "0.7rem",
+    fontWeight: 600,
+    color: "rgba(255,255,255,0.5)",
+    marginBottom: "0.4rem",
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.08em",
+  };
 
   return (
     <div
@@ -42,75 +108,242 @@ export default function LoginForm() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "var(--color-bg, #f5f6f8)",
-        fontFamily: "'Inter', sans-serif",
+        background: "linear-gradient(135deg, #0a0a0f 0%, #101024 40%, #0d1117 100%)",
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
+      {/* Ambient glow */}
+      <div
+        style={{
+          position: "absolute",
+          top: "-30%",
+          left: "-10%",
+          width: "60%",
+          height: "60%",
+          background: "radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)",
+          filter: "blur(80px)",
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: "-20%",
+          right: "-10%",
+          width: "50%",
+          height: "50%",
+          background: "radial-gradient(circle, rgba(168,85,247,0.12) 0%, transparent 70%)",
+          filter: "blur(80px)",
+          pointerEvents: "none",
+        }}
+      />
+
       <div
         style={{
           width: "100%",
-          maxWidth: 420,
+          maxWidth: 440,
           padding: "2.5rem",
-          background: "var(--color-surface, #ffffff)",
-          borderRadius: 16,
-          border: "1px solid var(--color-border, #e0e0e0)",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
+          background: "rgba(255,255,255,0.04)",
+          borderRadius: 20,
+          border: "1px solid rgba(255,255,255,0.08)",
+          boxShadow: "0 24px 80px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)",
+          backdropFilter: "blur(20px)",
+          position: "relative",
+          zIndex: 1,
         }}
       >
-        {/* Header */}
+        {/* ── Header ── */}
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-          <h1
+          <div
             style={{
-              fontSize: "1.5rem",
-              fontWeight: 700,
-              color: "var(--color-text, #333)",
-              marginBottom: "0.5rem",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 10,
+              marginBottom: "0.75rem",
             }}
           >
-            Fashion ERP
-          </h1>
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: "linear-gradient(135deg, #6366f1, #a855f7)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "1.1rem",
+                fontWeight: 800,
+                color: "#fff",
+                boxShadow: "0 4px 16px rgba(99,102,241,0.4)",
+              }}
+            >
+              R
+            </div>
+            <h1
+              style={{
+                fontSize: "1.4rem",
+                fontWeight: 700,
+                color: "#fff",
+                margin: 0,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              Riliks
+            </h1>
+          </div>
           <p
             style={{
-              fontSize: "0.85rem",
-              color: "var(--color-text-muted, #888)",
+              fontSize: "0.8rem",
+              color: "rgba(255,255,255,0.45)",
+              margin: 0,
             }}
           >
-            Financial & Ops Engine — Sign In
+            Fashion ERP — Financial & Ops Engine
           </p>
         </div>
 
-        {/* Error Banner */}
+        {/* ── Tabs ── */}
+        <div
+          style={{
+            display: "flex",
+            background: "rgba(255,255,255,0.04)",
+            borderRadius: 12,
+            padding: 4,
+            marginBottom: "1.75rem",
+            border: "1px solid rgba(255,255,255,0.06)",
+          }}
+        >
+          {(["signin", "signup"] as AuthMode[]).map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => {
+                setMode(tab);
+                setError(null);
+                setSuccess(null);
+              }}
+              style={{
+                flex: 1,
+                padding: "0.6rem",
+                border: "none",
+                borderRadius: 9,
+                fontSize: "0.8rem",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "all 0.25s",
+                background:
+                  mode === tab
+                    ? "linear-gradient(135deg, #6366f1, #7c3aed)"
+                    : "transparent",
+                color:
+                  mode === tab ? "#fff" : "rgba(255,255,255,0.4)",
+                boxShadow:
+                  mode === tab
+                    ? "0 4px 12px rgba(99,102,241,0.3)"
+                    : "none",
+              }}
+            >
+              {tab === "signin" ? "Sign In" : "Sign Up"}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Error / Success Banners ── */}
         {error && (
           <div
             style={{
-              padding: "0.75rem 1rem",
-              background: "#fef2f2",
-              border: "1px solid #fca5a5",
-              borderRadius: 8,
-              color: "#b91c1c",
-              fontSize: "0.8rem",
+              padding: "0.7rem 1rem",
+              background: "rgba(239,68,68,0.12)",
+              border: "1px solid rgba(239,68,68,0.25)",
+              borderRadius: 10,
+              color: "#fca5a5",
+              fontSize: "0.78rem",
               marginBottom: "1.25rem",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
             }}
           >
+            <span style={{ fontSize: "1rem" }}>⚠</span>
             {error}
           </div>
         )}
+        {success && (
+          <div
+            style={{
+              padding: "0.7rem 1rem",
+              background: "rgba(34,197,94,0.12)",
+              border: "1px solid rgba(34,197,94,0.25)",
+              borderRadius: 10,
+              color: "#86efac",
+              fontSize: "0.78rem",
+              marginBottom: "1.25rem",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <span style={{ fontSize: "1rem" }}>✓</span>
+            {success}
+          </div>
+        )}
 
-        {/* Form */}
-        <form onSubmit={handleLogin}>
+        {/* ── Form ── */}
+        <form onSubmit={handleSubmit}>
+          {mode === "signup" && (
+            <>
+              <div style={{ marginBottom: "1rem" }}>
+                <label htmlFor="fullName" style={labelStyle}>
+                  Full Name
+                </label>
+                <input
+                  id="fullName"
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Ahmed Mohamed"
+                  required
+                  style={inputStyle}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(99,102,241,0.5)";
+                    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.15)";
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: "1rem" }}>
+                <label htmlFor="brandName" style={labelStyle}>
+                  Brand Name
+                </label>
+                <input
+                  id="brandName"
+                  type="text"
+                  value={brandName}
+                  onChange={(e) => setBrandName(e.target.value)}
+                  placeholder="Your Fashion Brand"
+                  required
+                  style={inputStyle}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(99,102,241,0.5)";
+                    e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.15)";
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                />
+              </div>
+            </>
+          )}
+
           <div style={{ marginBottom: "1rem" }}>
-            <label
-              htmlFor="email"
-              style={{
-                display: "block",
-                fontSize: "0.75rem",
-                fontWeight: 600,
-                color: "var(--color-text-muted, #888)",
-                marginBottom: "0.4rem",
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-              }}
-            >
+            <label htmlFor="email" style={labelStyle}>
               Email
             </label>
             <input
@@ -118,36 +351,22 @@ export default function LoginForm() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@brand.com"
+              placeholder="you@brand.com"
               required
-              style={{
-                width: "100%",
-                padding: "0.7rem 0.9rem",
-                border: "1px solid var(--color-border, #e0e0e0)",
-                borderRadius: 8,
-                fontSize: "0.9rem",
-                background: "var(--color-bg, #f5f6f8)",
-                color: "var(--color-text, #333)",
-                outline: "none",
-                transition: "border-color 0.2s",
-                boxSizing: "border-box",
+              style={inputStyle}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "rgba(99,102,241,0.5)";
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.15)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)";
+                e.currentTarget.style.boxShadow = "none";
               }}
             />
           </div>
 
-          <div style={{ marginBottom: "1.5rem" }}>
-            <label
-              htmlFor="password"
-              style={{
-                display: "block",
-                fontSize: "0.75rem",
-                fontWeight: 600,
-                color: "var(--color-text-muted, #888)",
-                marginBottom: "0.4rem",
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-              }}
-            >
+          <div style={{ marginBottom: "1.75rem" }}>
+            <label htmlFor="password" style={labelStyle}>
               Password
             </label>
             <input
@@ -157,17 +376,15 @@ export default function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
-              style={{
-                width: "100%",
-                padding: "0.7rem 0.9rem",
-                border: "1px solid var(--color-border, #e0e0e0)",
-                borderRadius: 8,
-                fontSize: "0.9rem",
-                background: "var(--color-bg, #f5f6f8)",
-                color: "var(--color-text, #333)",
-                outline: "none",
-                transition: "border-color 0.2s",
-                boxSizing: "border-box",
+              minLength={6}
+              style={inputStyle}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "rgba(99,102,241,0.5)";
+                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(99,102,241,0.15)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)";
+                e.currentTarget.style.boxShadow = "none";
               }}
             />
           </div>
@@ -177,31 +394,48 @@ export default function LoginForm() {
             disabled={loading}
             style={{
               width: "100%",
-              padding: "0.75rem",
-              background: loading ? "#93a8c9" : "#0056D6",
+              padding: "0.8rem",
+              background: loading
+                ? "rgba(99,102,241,0.4)"
+                : "linear-gradient(135deg, #6366f1, #7c3aed)",
               color: "#fff",
               border: "none",
-              borderRadius: 8,
+              borderRadius: 10,
               fontSize: "0.9rem",
               fontWeight: 600,
               cursor: loading ? "not-allowed" : "pointer",
-              transition: "background 0.2s",
+              transition: "all 0.3s",
+              boxShadow: loading
+                ? "none"
+                : "0 8px 24px rgba(99,102,241,0.35)",
+              letterSpacing: "0.02em",
             }}
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {loading
+              ? mode === "signin"
+                ? "Signing in..."
+                : "Creating account..."
+              : mode === "signin"
+              ? "Sign In"
+              : "Create Account"}
           </button>
         </form>
 
-        {/* Footer */}
+        {/* ── Footer ── */}
         <p
           style={{
             textAlign: "center",
-            fontSize: "0.7rem",
-            color: "var(--color-text-muted, #aaa)",
-            marginTop: "1.75rem",
+            fontSize: "0.65rem",
+            color: "rgba(255,255,255,0.25)",
+            marginTop: "2rem",
+            letterSpacing: "0.05em",
           }}
         >
-          Powered by Integrity — SaaS for Fashion Brands
+          Powered by{" "}
+          <span style={{ color: "rgba(168,85,247,0.7)", fontWeight: 600 }}>
+            Riliks
+          </span>{" "}
+          — SaaS for Fashion Brands
         </p>
       </div>
     </div>
