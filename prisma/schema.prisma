@@ -26,6 +26,7 @@ model Brand {
   logoUrl         String?
   customDomain    String?  @unique
   commercialReg   String?
+  taxId           String?
   subscriptionTier SubscriptionTier @default(FREE)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
