@@ -35,10 +35,37 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const dbUser = await prisma.user.findUnique({
+  let dbUser = await prisma.user.findUnique({
     where: { id: user.id },
     select: { brandId: true, role: true },
   });
+
+  // ── Auto-Provisioning for New Signups ──
+  if (!dbUser) {
+    const brandName = user.user_metadata?.brand_name || "My Brand";
+    const fullName = user.user_metadata?.full_name || "Admin";
+
+    // 1. Create the Brand
+    const newBrand = await prisma.brand.create({
+      data: {
+        name: brandName,
+        slug: brandName.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Math.random().toString(36).substring(2, 6),
+      },
+    });
+
+    // 2. Create the User linked to the Brand
+    dbUser = await prisma.user.create({
+      data: {
+        id: user.id,
+        email: user.email!,
+        passwordHash: "oauth-managed", 
+        fullName: fullName,
+        role: "OWNER",
+        brandId: newBrand.id,
+      },
+      select: { brandId: true, role: true },
+    });
+  }
 
   if (!dbUser?.brandId) {
     return NextResponse.json({ error: "No brand assigned" }, { status: 400 });

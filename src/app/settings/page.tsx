@@ -28,7 +28,7 @@ export default function SettingsPage() {
   async function fetchSettings() {
     try {
       const res = await fetch("/api/settings");
-      if (!res.ok) throw new Error("Failed to load settings");
+      if (!res.ok) throw new Error("Failed to load settings (or your brand was just created). Retrying now...");
       const data = await res.json();
       
       setName(data.name || "");
@@ -83,12 +83,11 @@ export default function SettingsPage() {
     setMessage(null);
 
     try {
-      // Create a unique file name
       const fileExt = file.name.split(".").pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `logos/${fileName}`;
 
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("brands")
         .upload(filePath, file, { upsert: true });
 
@@ -96,7 +95,6 @@ export default function SettingsPage() {
         throw uploadError;
       }
 
-      // Get public URL
       const { data: publicUrlData } = supabase.storage
         .from("brands")
         .getPublicUrl(filePath);
@@ -113,192 +111,125 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="p-8 text-center text-[var(--color-text-muted)] mt-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+      <div style={{ padding: "3rem", textAlign: "center", color: "var(--color-text-muted)" }}>
         Loading configuration...
       </div>
     );
   }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto animate-fade-in pb-24">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-[var(--color-text)]">
-          Brand Profile
-        </h1>
-        <p className="text-[var(--color-text-muted)] mt-1">
-          Manage your SaaS identity, legal entity, and core financial behavior.
-        </p>
+    <div className="main-content">
+      <div className="page-header">
+        <h2>Brand Profile</h2>
+        <p>Manage your SaaS identity, legal entity, and core financial behavior.</p>
       </div>
 
       {message && (
-        <div
-          className={`px-4 py-3 rounded-lg mb-6 flex items-center gap-3 text-sm font-medium border ${
-            message.type === "success"
-              ? "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
-              : "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
-          }`}
-        >
-          <span>{message.type === "success" ? "✓" : "⚠"}</span>
-          {message.text}
+        <div style={{
+          padding: "1rem", 
+          marginBottom: "1.5rem", 
+          borderRadius: "8px", 
+          display: "flex", 
+          alignItems: "center", 
+          gap: "0.5rem",
+          background: message.type === "success" ? "rgba(5, 150, 105, 0.1)" : "rgba(220, 38, 38, 0.1)",
+          color: message.type === "success" ? "var(--color-success)" : "var(--color-danger)",
+          border: `1px solid ${message.type === "success" ? "var(--color-success)" : "var(--color-danger)"}`
+        }}>
+          <b>{message.type === "success" ? "✓" : "⚠"}</b> {message.text}
         </div>
       )}
 
-      <form onSubmit={handleSave} className="space-y-8">
-        {/* ── Visual Identity Module ── */}
-        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-6 shadow-sm overflow-hidden relative">
-          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-indigo-500 to-purple-500"></div>
-          <h2 className="text-lg font-semibold text-[var(--color-text)] mb-5">Visual Identity</h2>
+      <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: "2rem", maxWidth: "800px" }}>
+        
+        {/* Visual Identity Node */}
+        <div className="card" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <h3 style={{ fontSize: "1.1rem" }}>Visual Identity</h3>
           
-          <div className="flex items-start gap-8">
-            <div className="shrink-0">
+          <div style={{ display: "flex", gap: "2rem", alignItems: "flex-start", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
               <div 
-                className="w-32 h-32 rounded-2xl border-2 border-dashed border-[var(--color-border)] flex items-center justify-center overflow-hidden bg-[var(--color-bg)] transition-colors hover:border-primary relative group cursor-pointer"
+                style={{
+                  width: "120px", height: "120px", 
+                  borderRadius: "12px", 
+                  border: "2px dashed var(--color-border)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: "var(--color-bg)",
+                  cursor: "pointer",
+                  overflow: "hidden"
+                }}
                 onClick={() => fileInputRef.current?.click()}
               >
                 {logoUrl ? (
-                  <>
-                    <img src={logoUrl} alt="Brand Logo" className="w-full h-full object-contain p-2" />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white text-xs font-semibold">
-                      Change Logo
-                    </div>
-                  </>
+                  <img src={logoUrl} alt="Logo" style={{ width: "100%", height: "100%", objectFit: "contain", padding: "0.5rem" }} />
                 ) : (
-                  <div className="text-center p-4">
-                    <svg className="w-8 h-8 mx-auto text-[var(--color-text-muted)] mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span className="text-xs text-[var(--color-text-muted)] font-medium">Upload Logo</span>
-                  </div>
+                  <span style={{ fontSize: "0.8rem", color: "var(--color-text-muted)" }}>Upload Logo</span>
                 )}
               </div>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleLogoUpload} 
-                accept="image/*" 
-                className="hidden" 
-              />
-              {uploadingLogo && <p className="text-xs text-center mt-2 text-primary font-medium animate-pulse">Uploading...</p>}
+              <input type="file" ref={fileInputRef} onChange={handleLogoUpload} accept="image/*" style={{ display: "none" }} />
+              {uploadingLogo && <small style={{ color: "var(--color-primary)" }}>Uploading...</small>}
             </div>
 
-            <div className="flex-1 space-y-4">
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "1rem", minWidth: "250px" }}>
               <div>
-                <label className="block text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wide mb-1.5">
-                  Brand Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Riliks Studio"
-                  className="w-full px-4 py-2.5 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl text-[var(--color-text)] text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                />
+                <label className="kpi-label" style={{ marginBottom: "0.4rem", display: "block" }}>Brand Name</label>
+                <input type="text" className="input" value={name} onChange={(e) => setName(e.target.value)} required placeholder="e.g. Riliks Studio" />
               </div>
               <div>
-                <label className="block text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wide mb-1.5">
-                  Direct Logo URL (Optional Fallback)
-                </label>
-                <input
-                  type="url"
-                  value={logoUrl}
-                  onChange={(e) => setLogoUrl(e.target.value)}
-                  placeholder="https://example.com/logo.png"
-                  className="w-full px-4 py-2.5 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl text-[var(--color-text)] text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-[var(--color-text-muted)]"
-                />
+                <label className="kpi-label" style={{ marginBottom: "0.4rem", display: "block" }}>Direct Logo URL (Optional)</label>
+                <input type="url" className="input" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://example.com/logo.png" />
               </div>
             </div>
           </div>
         </div>
 
-        {/* ── Official Legal Data Module ── */}
-        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-6 shadow-sm overflow-hidden relative">
-          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-cyan-500"></div>
-          <h2 className="text-lg font-semibold text-[var(--color-text)] mb-5">Official Entity Data</h2>
-          <p className="text-xs text-[var(--color-text-muted)] mb-5">
-            This information guarantees legal compliance on invoices and official financial reports generated by the ERP.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wide mb-1.5">
-                Commercial Registration No.
-              </label>
-              <input
-                type="text"
-                value={commercialReg}
-                onChange={(e) => setCommercialReg(e.target.value)}
-                placeholder="209-12343-X"
-                className="w-full px-4 py-2.5 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl text-[var(--color-text)] text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-mono"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wide mb-1.5">
-                Tax ID Number (TIN)
-              </label>
-              <input
-                type="text"
-                value={taxId}
-                onChange={(e) => setTaxId(e.target.value)}
-                placeholder="XXX-XXX-XXX"
-                className="w-full px-4 py-2.5 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl text-[var(--color-text)] text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-mono"
-              />
-            </div>
+        {/* Official Entity Node */}
+        <div className="card" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div>
+            <h3 style={{ fontSize: "1.1rem" }}>Official Entity Data</h3>
+            <p className="text-muted" style={{ fontSize: "0.85rem", marginTop: "0.25rem" }}>
+              This guarantees legal compliance on invoices and official financial reports in the ERP.
+            </p>
           </div>
-        </div>
-
-        {/* ── Financial Configuration Module ── */}
-        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-6 shadow-sm overflow-hidden relative">
-          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-emerald-500 to-teal-500"></div>
-          <h2 className="text-lg font-semibold text-[var(--color-text)] mb-5">Financial Engine Settings</h2>
           
-          <div className="max-w-xs">
-            <label className="block text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wide mb-1.5">
-              Default Platform Currency
-            </label>
-            <div className="relative">
-              <select
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className="w-full px-4 py-2.5 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl text-[var(--color-text)] text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all appearance-none font-medium"
-              >
-                <option value="EGP">EGP - Egyptian Pound</option>
-                <option value="USD">USD - US Dollar</option>
-                <option value="EUR">EUR - Euro</option>
-                <option value="SAR">SAR - Saudi Riyal</option>
-                <option value="AED">AED - Emirati Dirham</option>
-              </select>
-              <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-[var(--color-text-muted)]">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
+          <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+            <div style={{ flex: 1, minWidth: "200px" }}>
+              <label className="kpi-label" style={{ marginBottom: "0.4rem", display: "block" }}>Commercial Registration No.</label>
+              <input type="text" className="input text-mono" value={commercialReg} onChange={(e) => setCommercialReg(e.target.value)} placeholder="209-12343-X" />
             </div>
-            <p className="text-[0.7rem] text-[var(--color-text-muted)] mt-2">
-              If changed, all dashboards and multi-currency reconciliations will anchor to this base currency.
+            <div style={{ flex: 1, minWidth: "200px" }}>
+              <label className="kpi-label" style={{ marginBottom: "0.4rem", display: "block" }}>Tax ID Number (TIN)</label>
+              <input type="text" className="input text-mono" value={taxId} onChange={(e) => setTaxId(e.target.value)} placeholder="XXX-XXX-XXX" />
+            </div>
+          </div>
+        </div>
+
+        {/* Financial Node */}
+        <div className="card" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <h3 style={{ fontSize: "1.1rem" }}>Financial Engine</h3>
+          
+          <div style={{ maxWidth: "300px" }}>
+            <label className="kpi-label" style={{ marginBottom: "0.4rem", display: "block" }}>Default Platform Currency</label>
+            <select className="input text-mono" value={currency} onChange={(e) => setCurrency(e.target.value)}>
+              <option value="EGP">EGP - Egyptian Pound</option>
+              <option value="USD">USD - US Dollar</option>
+              <option value="EUR">EUR - Euro</option>
+              <option value="SAR">SAR - Saudi Riyal</option>
+              <option value="AED">AED - Emirati Dirham</option>
+            </select>
+            <p className="text-muted" style={{ fontSize: "0.75rem", marginTop: "0.5rem" }}>
+              If changed, all dashboards and reports will anchor to this base currency.
             </p>
           </div>
         </div>
 
-        {/* ── Actions ── */}
-        <div className="flex justify-end pt-4">
-          <button
-            type="submit"
-            disabled={saving || uploadingLogo}
-            className="px-8 py-3 bg-[var(--color-text)] text-[var(--color-surface)] rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center gap-2"
-          >
-            {saving ? (
-              <>
-                <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Saving System Rules...
-              </>
-            ) : "Save Brand Profile"}
+        {/* Action Node */}
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <button type="submit" className="btn btn-primary" disabled={saving || uploadingLogo}>
+            {saving ? "Saving..." : "Save Brand Profile"}
           </button>
         </div>
+
       </form>
     </div>
   );
