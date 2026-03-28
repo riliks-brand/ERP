@@ -34,7 +34,7 @@ async function verifySuperAdmin() {
     select: { role: true },
   });
 
-  const role = dbUser?.role || user.user_metadata?.role || "STAFF";
+  const role = user.user_metadata?.role || dbUser?.role || "STAFF";
   if (role !== "SUPER_ADMIN") return null;
 
   return user;
