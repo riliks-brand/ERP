@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import ThemeToggle from "./ThemeToggle";
 import { createClient } from "@/lib/supabase/client";
+import { BrandLogoOrInitials, useBrand } from "@/components/BrandProvider";
 
 const NAV_SECTIONS = [
   {
@@ -45,6 +46,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+  const { brand } = useBrand();
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -54,9 +56,17 @@ export default function Sidebar() {
 
   return (
     <aside className="sidebar">
+      {/* ── Brand Identity ── */}
       <div className="sidebar-logo">
-        <h1>Fashion ERP</h1>
-        <span>Financial &amp; Ops Engine</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem" }}>
+          <BrandLogoOrInitials size={36} />
+          <div style={{ overflow: "hidden" }}>
+            <h1 style={{ fontSize: "0.95rem", fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {brand?.name || "Fashion ERP"}
+            </h1>
+            <span style={{ fontSize: "0.65rem" }}>Financial &amp; Ops Engine</span>
+          </div>
+        </div>
       </div>
 
       <ul className="sidebar-nav">

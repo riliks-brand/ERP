@@ -24,6 +24,7 @@ model Brand {
   slug            String   @unique
   currency        String   @default("EGP")
   logoUrl         String?
+  logoKey         String?  // Supabase Storage path — used for signed URL generation (private bucket)
   customDomain    String?  @unique
   commercialReg   String?
   taxId           String?
