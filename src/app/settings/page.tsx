@@ -175,10 +175,17 @@ export default function SettingsPage() {
                 <label className="kpi-label" style={{ marginBottom: "0.4rem", display: "block" }}>Brand Name</label>
                 <input type="text" className="input" value={name} onChange={(e) => setName(e.target.value)} required placeholder="e.g. Riliks Studio" />
               </div>
-              <div>
-                <label className="kpi-label" style={{ marginBottom: "0.4rem", display: "block" }}>Direct Logo URL (Optional)</label>
-                <input type="url" className="input" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://example.com/logo.png" />
-              </div>
+              <details style={{ cursor: "pointer", userSelect: "none" }}>
+                <summary className="kpi-label" style={{ marginBottom: "0.4rem", display: "inline-block", color: "var(--color-primary)" }}>
+                  Want to use an external link instead? (e.g. Google Drive)
+                </summary>
+                <div style={{ marginTop: "0.5rem" }}>
+                  <input type="url" className="input" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://example.com/logo.png" />
+                  <p className="text-muted" style={{ fontSize: "0.75rem", marginTop: "0.5rem" }}>
+                    If you upload an image, its link will appear here. You can also paste any direct image link to override it.
+                  </p>
+                </div>
+              </details>
             </div>
           </div>
         </div>

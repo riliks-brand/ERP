@@ -27,8 +27,8 @@ export async function createAuditLog(payload: AuditPayload) {
       tableName: payload.tableName,
       recordId: payload.recordId,
       action: payload.action,
-      oldValues: (payload.oldValues as Prisma.InputJsonValue) ?? Prisma.JsonNull,
-      newValues: (payload.newValues as Prisma.InputJsonValue) ?? Prisma.JsonNull,
+      oldValues: payload.oldValues ? JSON.parse(JSON.stringify(payload.oldValues)) : Prisma.JsonNull,
+      newValues: payload.newValues ? JSON.parse(JSON.stringify(payload.newValues)) : Prisma.JsonNull,
       ipAddress: payload.ipAddress ?? null,
     },
   });
