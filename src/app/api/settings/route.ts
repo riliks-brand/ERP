@@ -5,77 +5,90 @@ import { cookies } from "next/headers";
 import { createAuditLog } from "@/lib/audit";
 
 export async function GET() {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
+  try {
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              );
+            } catch {
+              // Readonly workaround
+            }
+          },
         },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          } catch {
-            // Readonly workaround
-          }
-        },
-      },
+      }
+    );
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: `Unauthorized: ${authError?.message || "No user"}` }, { status: 401 });
     }
-  );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  let dbUser = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { brandId: true, role: true },
-  });
-
-  // ── Auto-Provisioning for New Signups ──
-  if (!dbUser) {
-    const brandName = user.user_metadata?.brand_name || "My Brand";
-    const fullName = user.user_metadata?.full_name || "Admin";
-
-    // 1. Create the Brand
-    const newBrand = await prisma.brand.create({
-      data: {
-        name: brandName,
-        slug: brandName.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Math.random().toString(36).substring(2, 6),
-      },
-    });
-
-    // 2. Create the User linked to the Brand
-    dbUser = await prisma.user.create({
-      data: {
-        id: user.id,
-        email: user.email!,
-        passwordHash: "oauth-managed", 
-        fullName: fullName,
-        role: "OWNER",
-        brandId: newBrand.id,
-      },
+    let dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
       select: { brandId: true, role: true },
     });
+
+    // ── Auto-Provisioning for New Signups ──
+    if (!dbUser) {
+      const brandName = user.user_metadata?.brand_name || "My Brand";
+      const fullName = user.user_metadata?.full_name || "Admin";
+
+      // 1. Create the Brand
+      const newBrand = await prisma.brand.create({
+        data: {
+          name: brandName,
+          slug: brandName.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Math.random().toString(36).substring(2, 6),
+        },
+      });
+
+      // 2. Create the User linked to the Brand
+      dbUser = await prisma.user.create({
+        data: {
+          id: user.id,
+          email: user.email || `${user.id}@example.com`,
+          passwordHash: "oauth-managed", 
+          fullName: fullName,
+          role: "OWNER",
+          brandId: newBrand.id,
+        },
+        select: { brandId: true, role: true },
+      });
+    }
+
+    if (!dbUser?.brandId) {
+      return NextResponse.json({ error: "No brand assigned" }, { status: 400 });
+    }
+
+    const brand = await prisma.brand.findUnique({
+      where: { id: dbUser.brandId },
+    });
+
+    if (!brand) {
+      return NextResponse.json({ error: `Brand not found for ID: ${dbUser.brandId}` }, { status: 404 });
+    }
+
+    return NextResponse.json(brand);
+  } catch (err: any) {
+    console.error("GET /api/settings error:", err);
+    return NextResponse.json(
+      { error: err.message || "Internal Server Error" },
+      { status: 500 }
+    );
   }
-
-  if (!dbUser?.brandId) {
-    return NextResponse.json({ error: "No brand assigned" }, { status: 400 });
-  }
-
-  const brand = await prisma.brand.findUnique({
-    where: { id: dbUser.brandId },
-  });
-
-  return NextResponse.json(brand);
 }
 
 export async function PUT(request: Request) {
