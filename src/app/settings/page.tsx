@@ -28,7 +28,14 @@ export default function SettingsPage() {
   async function fetchSettings() {
     try {
       const res = await fetch("/api/settings");
-      if (!res.ok) throw new Error("Failed to load settings (or your brand was just created). Retrying now...");
+      if (!res.ok) {
+        let errStr = "Failed to load settings (or your brand was just created). Retrying now...";
+        try {
+          const errData = await res.json();
+          if (errData.error) errStr = `Error: ${errData.error} (Status: ${res.status})`;
+        } catch (_) {}
+        throw new Error(errStr);
+      }
       const data = await res.json();
       
       setName(data.name || "");
