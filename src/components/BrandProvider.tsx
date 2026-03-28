@@ -137,25 +137,5 @@ export function BrandLogoOrInitials({
   }
 
   // Initials fallback
-  return (
-    <div
-      style={{
-        width: size,
-        height: size,
-        borderRadius: 8,
-        background: "linear-gradient(135deg, var(--color-primary), var(--color-primary-light))",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "white",
-        fontWeight: 700,
-        fontSize: size * 0.38,
-        letterSpacing: "0.05em",
-        flexShrink: 0,
-      }}
-      className={className}
-    >
-      {initials}
-    </div>
-  );
+  return null;
 }

@@ -61,7 +61,7 @@ export default function Sidebar() {
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem" }}>
           <BrandLogoOrInitials size={36} />
           <div style={{ overflow: "hidden" }}>
-            <h1 style={{ fontSize: "0.95rem", fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            <h1 style={{ fontSize: "0.95rem", fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textTransform: "uppercase" }}>
               {brand?.name || "Fashion ERP"}
             </h1>
             <span style={{ fontSize: "0.65rem" }}>Financial &amp; Ops Engine</span>

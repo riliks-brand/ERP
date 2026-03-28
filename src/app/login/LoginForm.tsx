@@ -131,23 +131,6 @@ export default function LoginForm() {
               marginBottom: "0.75rem",
             }}
           >
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
-                background: "linear-gradient(135deg, #6366f1, #a855f7)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "1.1rem",
-                fontWeight: 800,
-                color: "#fff",
-                boxShadow: "0 4px 12px rgba(99,102,241,0.3)",
-              }}
-            >
-              R
-            </div>
             <h1
               style={{
                 fontSize: "1.4rem",
@@ -157,7 +140,7 @@ export default function LoginForm() {
                 letterSpacing: "-0.02em",
               }}
             >
-              Riliks
+              RILIKS
             </h1>
           </div>
           <p
@@ -395,7 +378,7 @@ export default function LoginForm() {
         >
           Powered by{" "}
           <span style={{ color: "#6366f1", fontWeight: 600 }}>
-            Riliks
+            RILIKS
           </span>{" "}
           — SaaS for Fashion Brands
         </p>
