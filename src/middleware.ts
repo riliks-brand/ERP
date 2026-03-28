@@ -5,6 +5,9 @@ import { NextResponse, type NextRequest } from "next/server";
 // RBAC Route Map — defines which roles can access which routes.
 // ---------------------------------------------------------------------------
 const ROLE_ACCESS: Record<string, string[]> = {
+  // Super Admin — platform owner only
+  "/super-admin":    ["SUPER_ADMIN"],
+
   // Financial pages — Owner, Admin, Accountant only
   "/reports":        ["SUPER_ADMIN", "OWNER", "ADMIN", "ACCOUNTANT"],
   "/reconciliation": ["SUPER_ADMIN", "OWNER", "ADMIN", "ACCOUNTANT"],
