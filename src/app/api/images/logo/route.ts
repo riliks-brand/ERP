@@ -5,7 +5,7 @@
  *
  * Flow:
  *   1. Validate auth cookie
- *   2. Lookup brand's logoKey from DB (cached 60s)
+ *   2. Lookup brand's logo fields from DB
  *   3. Generate a short-lived signed URL via Service Role key
  *   4. 302 Redirect with Cache-Control: private, max-age=3300
  *      (browser caches for ~55 min; signed URL valid for 60 min)
@@ -19,20 +19,9 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { supabaseAdmin, STORAGE_BUCKET, SIGNED_URL_TTL } from "@/lib/supabase/admin";
-import { unstable_cache } from "next/cache";
 
-/** Cache the logoKey lookup — brand logos don't change often. */
-const getLogoKey = unstable_cache(
-  async (brandId: string) => {
-    const brand = await prisma.brand.findUnique({
-      where: { id: brandId },
-      select: { logoKey: true, logoUrl: true },
-    });
-    return brand;
-  },
-  ["logo-key"],
-  { revalidate: 60, tags: ["settings"] }
-);
+// Force dynamic — uses auth cookies + DB, must never be statically rendered
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
@@ -44,8 +33,8 @@ export async function GET() {
       {
         cookies: {
           getAll: () => cookieStore.getAll(),
-          setAll: (cookiesToSet) => {
-            try { cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options)); } catch {}
+          setAll: (list) => {
+            try { list.forEach(({ name, value, options }) => cookieStore.set(name, value, options)); } catch {}
           },
         },
       }
@@ -66,18 +55,22 @@ export async function GET() {
       return NextResponse.json({ error: "No brand" }, { status: 400 });
     }
 
-    // ── 3. Look up brand logo ──
-    const brand = await getLogoKey(dbUser.brandId);
+    // ── 3. Fetch full brand (logoKey + logoUrl) ──
+    const brand = await prisma.brand.findUnique({
+      where: { id: dbUser.brandId },
+    });
 
     if (!brand) {
       return NextResponse.json({ error: "Brand not found" }, { status: 404 });
     }
 
-    // ── 4. If no storage key, return logoUrl (external) or 404 ──
-    if (!brand.logoKey) {
-      if (brand.logoUrl) {
-        // External URL — redirect directly (no signed URL needed)
-        return NextResponse.redirect(brand.logoUrl, {
+    // ── 4. If no storage key, fall back to external logoUrl or 404 ──
+    const logoKey = (brand as any).logoKey as string | null;
+    const logoUrl = brand.logoUrl;
+
+    if (!logoKey) {
+      if (logoUrl) {
+        return NextResponse.redirect(logoUrl, {
           status: 302,
           headers: { "Cache-Control": "public, max-age=3600" },
         });
@@ -88,15 +81,15 @@ export async function GET() {
     // ── 5. Generate signed URL for private bucket ──
     const { data: signedData, error: signError } = await supabaseAdmin.storage
       .from(STORAGE_BUCKET)
-      .createSignedUrl(brand.logoKey, SIGNED_URL_TTL);
+      .createSignedUrl(logoKey, SIGNED_URL_TTL);
 
     if (signError || !signedData?.signedUrl) {
       console.error("Signed URL error:", signError);
       return NextResponse.json({ error: "Could not generate image URL" }, { status: 500 });
     }
 
-    // ── 6. Redirect to signed URL with browser cache headers ──
-    // Cache for 55 min (< 60 min TTL of signed URL, to prevent edge expiry)
+    // ── 6. Redirect with browser cache headers ──
+    // 55 min < 60 min TTL — avoids serving an expired signed URL from cache
     return NextResponse.redirect(signedData.signedUrl, {
       status: 302,
       headers: {
